@@ -28,17 +28,24 @@ class AdminController extends Controller
         }
 
             $employees = User::where('role', 'employee')
+                ->select('users.*')
                 ->withCount([
                     'leaves as pending_leaves_count' => function ($query) {
-                        $query->where('status', 'pending');
+                        $query->where('status', 'pending')
+                            ->selectRaw('count(*)');
                     },
                     'leaves as approved_leaves_count' => function ($query) {
-                        $query->where('status', 'approved');
+                        $query->where('status', 'approved')
+                            ->selectRaw('count(*)');
                     },
                     'leaves as rejected_leaves_count' => function ($query) {
-                        $query->where('status', 'rejected');
+                        $query->where('status', 'rejected')
+                            ->selectRaw('count(*)');
                     }
                 ])
+                ->chunk(100, function ($users) {
+                    // Process users in chunks to avoid memory issues
+                })
                 ->get();
 
             Log::info('Employees fetched successfully', [
