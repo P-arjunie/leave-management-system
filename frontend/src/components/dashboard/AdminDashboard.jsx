@@ -36,6 +36,7 @@ export const AdminDashboard = () => {
   const fetchEmployees = async () => {
     try {
       console.log('Fetching employees...');
+      console.log('Current token:', localStorage.getItem('token'));
       const response = await apiCall('get', '/admin/employees');
       console.log('Employees response:', response);
       
@@ -49,7 +50,9 @@ export const AdminDashboard = () => {
       console.error('Error fetching employees:', {
         error,
         message: error.message,
-        response: error.response
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
       });
     }
   };

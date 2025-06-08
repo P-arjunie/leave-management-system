@@ -19,33 +19,27 @@ class AdminController extends Controller
                 'user_role' => $user->role
             ]);
 
-        if (!$user->isAdmin()) {
+            if (!$user->isAdmin()) {
                 Log::warning('Unauthorized access attempt to getEmployees', [
                     'user_id' => $user->id,
                     'user_role' => $user->role
                 ]);
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
 
             $employees = User::where('role', 'employee')
                 ->select('users.*')
                 ->withCount([
                     'leaves as pending_leaves_count' => function ($query) {
-                        $query->where('status', 'pending')
-                            ->selectRaw('count(*)');
+                        $query->where('status', 'pending');
                     },
                     'leaves as approved_leaves_count' => function ($query) {
-                        $query->where('status', 'approved')
-                            ->selectRaw('count(*)');
+                        $query->where('status', 'approved');
                     },
                     'leaves as rejected_leaves_count' => function ($query) {
-                        $query->where('status', 'rejected')
-                            ->selectRaw('count(*)');
+                        $query->where('status', 'rejected');
                     }
                 ])
-                ->chunk(100, function ($users) {
-                    // Process users in chunks to avoid memory issues
-                })
                 ->get();
 
             Log::info('Employees fetched successfully', [
